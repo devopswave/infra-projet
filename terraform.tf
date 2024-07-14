@@ -1,4 +1,7 @@
 terraform {
+  backend "s3" {
+    key = "global/cluster/projetdevops/terraform.tfstate"
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"

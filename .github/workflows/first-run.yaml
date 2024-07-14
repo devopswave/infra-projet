@@ -38,92 +38,89 @@ jobs:
           name: terraform-plan
           path: tfplan
 
-      - name: 'Save Terraform Outputs'
-        run: terraform output -json > terraform_outputs.json
+#   terraform_apply:
+#     name: 'Terraform Apply'
+#     runs-on: ubuntu-latest
+#     needs: terraform_plan
+#     if: success()
 
-  terraform_apply:
-    name: 'Terraform Apply'
-    runs-on: ubuntu-latest
-    needs: terraform_plan
-    if: success()
+#     steps:
+#       - name: 'Download Terraform Plan'
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: terraform-plan
+#           path: .
 
-    steps:
-      - name: 'Download Terraform Plan'
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-plan
-          path: .
+#       - name: 'Save Terraform Outputs'
+#         run: terraform output -json > terraform_outputs.json
 
-      - name: 'Save Terraform Outputs'
-        run: terraform output -json > terraform_outputs.json
+#       - name: 'Set up Terraform'
+#         uses: hashicorp/setup-terraform@v3
+#         with:
+#           terraform_version: '1.9.2'
 
-      - name: 'Set up Terraform'
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: '1.9.2'
+#       - name: 'Configure AWS Credentials'
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: 'eu-west-3'
 
-      - name: 'Configure AWS Credentials'
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'eu-west-3'
+#       - name: 'Terraform Apply'
+#         run: terraform apply tfplan
 
-      - name: 'Terraform Apply'
-        run: terraform apply tfplan
+#   post_apply:
+#     name: 'Post Apply'
+#     runs-on: ubuntu-latest
+#     needs: terraform_apply
+#     if: success()
 
-  post_apply:
-    name: 'Post Apply'
-    runs-on: ubuntu-latest
-    needs: terraform_apply
-    if: success()
+#     steps:
+#       - name: 'Download Terraform Outputs'
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: terraform-outputs
+#           path: .
 
-    steps:
-      - name: 'Download Terraform Outputs'
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-outputs
-          path: .
+#       - name: 'Parse Terraform Outputs'
+#         id: parse_outputs
+#         run: |
+#           cluster_name=$(jq -r .cluster_name.value terraform_outputs.json)
+#           cluster_endpoint=$(jq -r .cluster_endpoint.value terraform_outputs.json)
+#           echo "::set-output name=CLUSTER_NAME::${cluster_name}"
+#           echo "::set-output name=CLUSTER_ENDPOINT::${cluster_endpoint}"
+#           echo "CLUSTER_NAME=${cluster_name}" >> $GITHUB_ENV
+#           echo "CLUSTER_ENDPOINT=${cluster_endpoint}" >> $GITHUB_ENV
 
-      - name: 'Parse Terraform Outputs'
-        id: parse_outputs
-        run: |
-          cluster_name=$(jq -r .cluster_name.value terraform_outputs.json)
-          cluster_endpoint=$(jq -r .cluster_endpoint.value terraform_outputs.json)
-          echo "::set-output name=CLUSTER_NAME::${cluster_name}"
-          echo "::set-output name=CLUSTER_ENDPOINT::${cluster_endpoint}"
-          echo "CLUSTER_NAME=${cluster_name}" >> $GITHUB_ENV
-          echo "CLUSTER_ENDPOINT=${cluster_endpoint}" >> $GITHUB_ENV
+#       - name: 'Install kubectl'
+#         run: |
+#           curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+#           chmod +x kubectl
+#           sudo mv kubectl /usr/local/bin/
 
-      - name: 'Install kubectl'
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
+#       - name: 'Get kubeconfig'
+#         run: |
+#           aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
 
-      - name: 'Get kubeconfig'
-        run: |
-          aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+#       - name: 'Install ArgoCD'
+#         run: |
+#           kubectl create namespace argocd
+#           kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
-      - name: 'Install ArgoCD'
-        run: |
-          kubectl create namespace argocd
-          kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+#       - name: 'Wait for ArgoCD to be ready'
+#         run: |
+#           kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
 
-      - name: 'Wait for ArgoCD to be ready'
-        run: |
-          kubectl wait --for=condition=available --timeout=600s deployment/argocd-server -n argocd
+#       - name: 'Expose ArgoCD server'
+#         run: |
+#           kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
 
-      - name: 'Expose ArgoCD server'
-        run: |
-          kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+#       - name: 'Add Prometheus Helm Repo'
+#         run: |
+#           helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#           helm repo update
 
-      - name: 'Add Prometheus Helm Repo'
-        run: |
-          helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-          helm repo update
-
-      - name: 'Install Prometheus'
-        run: |
-          kubectl create namespace monitoring
-          helm install supervision prometheus-community/kube-prometheus-stack -n monitoring
+#       - name: 'Install Prometheus'
+#         run: |
+#           kubectl create namespace monitoring
+#           helm install supervision prometheus-community/kube-prometheus-stack -n monitoring

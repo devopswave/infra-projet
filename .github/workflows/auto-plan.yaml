@@ -2,9 +2,9 @@ name: Terraform FirstRun
 
 on:
   workflow_dispatch: # Déclencheur pour l'exécution manuelle via l'interface GitHub
-  push:
-    branches:
-      - main
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   terraform_apply:

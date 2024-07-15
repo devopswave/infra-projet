@@ -35,7 +35,7 @@ variable "cidrs_private" {
 
 # Type d'AMI pour les groupes de nœuds managés
 variable "node_group_type" {
-  description = "Type d'AMI pour les groupes de nœuds managés."
+  description = "Type d'AMI pour les groupes de nœuds managés. Par exemple, 'AL2_x86_64'."
   type        = string
   default     = "AL2_x86_64"
 }
@@ -48,21 +48,11 @@ variable "node_instance_type" {
 }
 
 # Configuration pour le dimensionnement des groupes de nœuds
-variable "scaling_config_1" {
-  description = "Configuration du dimensionnement du premier nœuds."
+variable "scaling_config" {
+  description = "Configuration du dimensionnement des groupes de nœuds, comprenant la taille désirée, maximale, et minimale."
   type        = map(any)
   default = {
     "desired_size" = 2
-    "max_size"     = 3
-    "min_size"     = 1
-  }
-}
-
-variable "scaling_config_2" {
-  description = "Configuration du dimensionnement du second nœuds."
-  type        = map(any)
-  default = {
-    "desired_size" = 1
     "max_size"     = 3
     "min_size"     = 1
   }

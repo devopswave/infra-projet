@@ -1,8 +1,3 @@
-# Fournisseur AWS
-provider "aws" {
-  region = var.region
-}
-
 # Filtrer les zones de disponibilité locales qui ne sont pas 
 # prises en charge par les groupes de nœuds managés
 data "aws_availability_zones" "available" {
@@ -11,10 +6,11 @@ data "aws_availability_zones" "available" {
     values = ["opt-in-not-required"]
   }
 }
+
 # Module VPC
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.9.0"
+  version = "5.8.1"
 
   name = "${var.project_name}-vpc"
 

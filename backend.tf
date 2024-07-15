@@ -1,16 +1,13 @@
 terraform {
-  backend "s3" {
-    key = "global/projet-infra/terraform.tfstate"
-  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.58.0"
+      version = "~> 5.47.0"
     }
 
     random = {
       source  = "hashicorp/random"
-      version = "~> 3.6.2"
+      version = "~> 3.6.1"
     }
 
     tls = {
@@ -24,5 +21,10 @@ terraform {
     }
   }
 
-  required_version = "~> 1.9"
+  required_version = "~> 1.3"
+}
+
+# Fournisseur AWS
+provider "aws" {
+  region = var.region
 }

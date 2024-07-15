@@ -1,7 +1,8 @@
-# Définir des variables locales
+# Définir des variables locales du cluster EKS
 locals {
   cluster_name = "${var.project_name}-eks-${random_string.suffix.result}"
 }
+
 # Générer une chaîne aléatoire pour le suffixe du nom de cluster
 resource "random_string" "suffix" {
   length  = 8
@@ -11,7 +12,7 @@ resource "random_string" "suffix" {
 # Module EKS
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.17.2"
+  version = "20.8.5"
 
   cluster_name    = local.cluster_name
   cluster_version = "1.30"
@@ -38,9 +39,9 @@ module "eks" {
 
       instance_types = [var.node_instance_type]
 
-      min_size     = var.scaling_config_1.min_size
-      max_size     = var.scaling_config_1.max_size
-      desired_size = var.scaling_config_1.desired_size
+      min_size     = var.scaling_config.min_size
+      max_size     = var.scaling_config.max_size
+      desired_size = var.scaling_config.desired_size
     }
 
     two = {
@@ -48,9 +49,9 @@ module "eks" {
 
       instance_types = [var.node_instance_type]
 
-      min_size     = var.scaling_config_2.min_size
-      max_size     = var.scaling_config_2.max_size
-      desired_size = var.scaling_config_2.desired_size
+      min_size     = var.scaling_config.min_size
+      max_size     = var.scaling_config.max_size
+      desired_size = var.scaling_config.desired_size
     }
   }
 }

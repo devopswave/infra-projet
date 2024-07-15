@@ -31,8 +31,8 @@ jobs:
         id: terraform_plan
         run: terraform plan -out=tfplan
 
-      - name: 'Terraform Apply'
-        run: terraform apply tfplan
+      # - name: 'Terraform Apply'
+      #   run: terraform apply tfplan
 
 #   post_apply:
 #     name: 'Post Apply'

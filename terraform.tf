@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    key = "global/cluster/projetdevops/terraform.tfstate"
+    key = "global/projet-infra/terraform.tfstate"
   }
   required_providers {
     aws = {

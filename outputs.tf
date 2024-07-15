@@ -37,6 +37,8 @@ output "private_subnets" {
   description = "Les ID des sous-réseaux privés du VPC."
   value       = module.vpc.private_subnets
 }
+
 output "kubeconnect" {
-  value = "aws eks update-kubeconfig --region var.region --name output.cluster_name.value"
+  description = "Commande pour se connecter au cluster EKS."
+  value       = "aws eks update-kubeconfig --region ${var.region} --name ${module.eks.cluster_name}"
 }

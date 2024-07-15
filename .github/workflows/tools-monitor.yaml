@@ -39,7 +39,7 @@ jobs:
       
       - name: 'Get kubeconfig'
         run: |
-          $(terraform output -raw kubeconnect)
+          terraform output -raw kubeconnect
       
       - name: 'Install Helm'
         run: |
